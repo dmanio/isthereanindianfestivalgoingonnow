@@ -14,6 +14,7 @@
       height: 100vh;
       margin: 0;
       background-color: #f9fafb;
+      text-align: center;
     }
     .date {
       font-size: 1.2rem;
@@ -39,38 +40,48 @@
   <div class="festival-name" id="festivalName"></div>
 
   <script>
-    async function checkFestival() {
+    // Major Indian Gazetted & National Holidays (2026)
+    const festivals = {
+      "2026-01-26": "Republic Day",
+      "2026-03-03": "Holi",
+      "2026-03-20": "Eid ul-Fitr",
+      "2026-04-03": "Good Friday",
+      "2026-05-27": "Bakrid / Eid al-Adha",
+      "2026-08-15": "Independence Day",
+      "2026-08-26": "Milad un-Nabi",
+      "2026-09-04": "Janmashtami",
+      "2026-10-02": "Gandhi Jayanti",
+      "2026-10-20": "Dussehra / Vijayadashami",
+      "2026-11-08": "Diwali / Deepavali",
+      "2026-11-24": "Guru Nanak Jayanti",
+      "2026-12-25": "Christmas Day"
+    };
+
+    function checkFestival() {
       const now = new Date();
       
-      // Format today's date in India timezone
+      // Convert display date to IST (India Standard Time)
       const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'long', day: 'numeric' };
       const formattedDate = now.toLocaleDateString('en-IN', options);
       document.getElementById('todayDate').innerText = `Today in India: ${formattedDate}`;
 
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const todayISO = `${year}-${month}-${day}`;
+      // Get YYYY-MM-DD in IST timezone
+      const istDate = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+      const yyyy = istDate.getFullYear();
+      const mm = String(istDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(istDate.getDate()).padStart(2, '0');
+      const todayKey = `${yyyy}-${mm}-${dd}`;
 
-      try {
-        // Fetch official holidays for India for the current year
-        const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/IN`);
-        const holidays = await res.json();
+      const festival = festivals[todayKey];
 
-        // Check if today matches any holiday date
-        const match = holidays.find(h => h.date === todayISO);
-
-        if (match) {
-          document.getElementById('answer').innerText = 'YES';
-          document.getElementById('answer').style.color = '#16a34a'; // Green
-          document.getElementById('festivalName').innerText = `🎉 ${match.localName} (${match.name})`;
-        } else {
-          document.getElementById('answer').innerText = 'NO';
-          document.getElementById('answer').style.color = '#dc2626'; // Red
-        }
-      } catch (err) {
-        document.getElementById('answer').innerText = 'ERROR';
-        document.getElementById('festivalName').innerText = 'Could not load festival data.';
+      if (festival) {
+        document.getElementById('answer').innerText = 'YES';
+        document.getElementById('answer').style.color = '#16a34a'; // Green
+        document.getElementById('festivalName').innerText = `🎉 ${festival}`;
+      } else {
+        document.getElementById('answer').innerText = 'NO';
+        document.getElementById('answer').style.color = '#dc2626'; // Red
+        document.getElementById('festivalName').innerText = '';
       }
     }
 
