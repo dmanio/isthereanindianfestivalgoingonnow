@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Is there an Indian festival going on now?</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f9fafb;
+    }
+    .date {
+      font-size: 1.2rem;
+      color: #6b7280;
+      margin-bottom: 1rem;
+    }
+    .answer {
+      font-size: 6rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .festival-name {
+      margin-top: 1.5rem;
+      font-size: 1.5rem;
+      color: #374151;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="date" id="todayDate">Loading...</div>
+  <div class="answer" id="answer">...</div>
+  <div class="festival-name" id="festivalName"></div>
+
+  <script>
+    async function checkFestival() {
+      const now = new Date();
+      
+      // Format today's date in India timezone
+      const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'long', day: 'numeric' };
+      const formattedDate = now.toLocaleDateString('en-IN', options);
+      document.getElementById('todayDate').innerText = `Today in India: ${formattedDate}`;
+
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const todayISO = `${year}-${month}-${day}`;
+
+      try {
+        // Fetch official holidays for India for the current year
+        const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/IN`);
+        const holidays = await res.json();
+
+        // Check if today matches any holiday date
+        const match = holidays.find(h => h.date === todayISO);
+
+        if (match) {
+          document.getElementById('answer').innerText = 'YES';
+          document.getElementById('answer').style.color = '#16a34a'; // Green
+          document.getElementById('festivalName').innerText = `🎉 ${match.localName} (${match.name})`;
+        } else {
+          document.getElementById('answer').innerText = 'NO';
+          document.getElementById('answer').style.color = '#dc2626'; // Red
+        }
+      } catch (err) {
+        document.getElementById('answer').innerText = 'ERROR';
+        document.getElementById('festivalName').innerText = 'Could not load festival data.';
+      }
+    }
+
+    checkFestival();
+  </script>
+</body>
+</html>
